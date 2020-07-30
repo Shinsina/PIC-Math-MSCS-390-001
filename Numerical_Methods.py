@@ -118,6 +118,21 @@ def plot_IVP(sys, init, tspan, h=None, is_forward=None):
     #plt.plot(init[0], init[1], 'r.')
     return t,v
 
+def plot_time_series(sys, init, tspan, h=None, is_forward=None):
+    # Choose the missing parameters
+    forward = tspan[1] > tspan[0]
+    if is_forward == None:    
+        is_forward = operator.lt if forward else operator.gt
+        #print(f'Choosing stopping method {"forward" if forward else "backward"}.')
+    if h == None:
+        h = .01 if forward else -.01
+    #print(f'Choosing step size {h}.')
+    t,v = solve_IVP(sys, init, tspan, h, is_forward)
+    plt.plot(t,v[:,1],'y--');
+    plt.plot(t[0], init[1], 'r.')
+    plt.xlabel('$t$',size=20)
+    return t,v
+
 # Taylor approximation at x0 of the function 'function'. The degree of the resulting polynomial is n.
 def taylor(function,x0,n):
     x, y = sp.symbols('x, y')
@@ -131,3 +146,14 @@ def taylor(function,x0,n):
         p = p + (eq.diff(x,i).subs(x,x0))/(factorial(i))*(x-x0)**i
         i += 1
     return sp.simplify(p)
+
+def gauss_laguerre_quadrature(f,conversion,N):
+    
+    x,w = roots_laguerre(N)
+    
+    #need to become e^(-x)
+    x=x*conversion
+    w=w*conversion
+
+    return sum(f(x)*w)
+
